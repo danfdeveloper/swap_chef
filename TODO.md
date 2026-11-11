@@ -6,11 +6,12 @@
 **Goal:** Everyone can run the application locally.
 
 - [ ] **All:** Create shared GitHub repository and agree on branch/PR review workflow.
-- [ ] **Emma:** Scaffold React + Vite frontend and basic CSS layout.
+- [x] **Emma:** Scaffold React + Vite frontend and basic CSS layout.
 - [ ] **Dan:** Scaffold Node.js + Express server and basic API response conventions.
 - [ ] **Aman:** Set up SQLite database and initial schema for users, recipes, versions, ingredients, steps, and fork relationships.
 - [ ] **Dan + Aman:** Define API requests/responses, validation rules, and parent-version references.
-- [ ] **Emma + Dan:** Agree on frontend data shapes and create mock recipe data.
+- [x] **Emma + Dan:** Agree on frontend data shapes and create mock recipe data.
+  - Emma: shapes + mock data in `frontend/src/data/` and `frontend/DATA_SHAPES.md` (Dan still to confirm).
 - [ ] **Mark:** Verify local setup instructions and test frontend/backend/database integration.
 - [ ] **All:** Document installation, run commands, and any API/schema decisions.
 - [ ] **All:** Confirm the complete app can run locally.
