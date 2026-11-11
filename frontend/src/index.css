@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Libre+Baskerville:wght@700&display=swap');
+
+:root {
+  --ink: #14212b;
+  --muted: #5a6a75;
+  --surface: #ffffff;
+  --surface-hover: #eef5f2;
+  --border: #c9d5d0;
+  --accent: #1f6f5b;
+  --page: #e8eef0;
+  --font-display: 'Libre Baskerville', Georgia, serif;
+  --font-body: 'DM Sans', 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--page);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at top right, rgba(31, 111, 91, 0.12), transparent 40%),
+    linear-gradient(165deg, #e8eef0 0%, #dfe8e4 55%, #e7ecef 100%);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+a {
+  color: var(--accent);
+}
+
+#root {
+  min-height: 100vh;
+}
