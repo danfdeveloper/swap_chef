@@ -1,0 +1,166 @@
+{
+  "GET /api/auth/me": {
+    "user": { "id": 1, "username": "chef_dan" }
+  },
+
+  "GET /api/recipes": {
+    "recipes": [
+      { "id": 9, "title": "Vegan Brown Butter Cookies", "author": { "id": 4, "username": "lee" }, "forkCount": 0, "createdAt": "2026-11-09T18:20:00.000Z" },
+      { "id": 7, "title": "Brown Butter Cookies", "author": { "id": 1, "username": "chef_dan" }, "forkCount": 1, "createdAt": "2026-11-08T15:00:00.000Z" },
+      { "id": 3, "title": "Classic Chocolate Chip Cookies", "author": { "id": 2, "username": "sam" }, "forkCount": 1, "createdAt": "2026-11-05T12:00:00.000Z" },
+      { "id": 1, "title": "Grandma's Chocolate Chip Cookies", "author": { "id": 5, "username": "nana" }, "forkCount": 1, "createdAt": "2026-11-01T09:00:00.000Z" }
+    ]
+  },
+
+  "GET /api/recipes/1": {
+    "recipe": {
+      "id": 1,
+      "title": "Grandma's Chocolate Chip Cookies",
+      "description": "The original family recipe.",
+      "prepMinutes": 15,
+      "cookMinutes": 10,
+      "author": { "id": 5, "username": "nana" },
+      "parent": null,
+      "forkCount": 1,
+      "version": 1,
+      "versions": [{ "version": 1, "createdAt": "2026-11-01T09:00:00.000Z" }],
+      "ingredients": [
+        { "quantity": 1, "unit": "cup", "name": "butter, softened" },
+        { "quantity": 1, "unit": "cup", "name": "sugar" },
+        { "quantity": 2, "unit": null, "name": "eggs" },
+        { "quantity": 2.25, "unit": "cup", "name": "flour" },
+        { "quantity": 1, "unit": "tsp", "name": "baking soda" },
+        { "quantity": 2, "unit": "cup", "name": "chocolate chips" }
+      ],
+      "steps": [
+        "Preheat oven to 375°F.",
+        "Cream butter and sugar, then beat in eggs.",
+        "Stir in flour and baking soda, then fold in chocolate chips.",
+        "Bake 10 minutes."
+      ],
+      "createdAt": "2026-11-01T09:00:00.000Z",
+      "updatedAt": "2026-11-01T09:00:00.000Z"
+    }
+  },
+
+  "GET /api/recipes/3": {
+    "recipe": {
+      "id": 3,
+      "title": "Classic Chocolate Chip Cookies",
+      "description": "Grandma's recipe with less sugar and a pinch of salt.",
+      "prepMinutes": 15,
+      "cookMinutes": 10,
+      "author": { "id": 2, "username": "sam" },
+      "parent": { "recipeId": 1, "version": 1, "title": "Grandma's Chocolate Chip Cookies" },
+      "forkCount": 1,
+      "version": 2,
+      "versions": [
+        { "version": 1, "createdAt": "2026-11-05T12:00:00.000Z" },
+        { "version": 2, "createdAt": "2026-11-06T10:15:00.000Z" }
+      ],
+      "ingredients": [
+        { "quantity": 1, "unit": "cup", "name": "butter, softened" },
+        { "quantity": 0.75, "unit": "cup", "name": "sugar" },
+        { "quantity": 2, "unit": null, "name": "eggs" },
+        { "quantity": 2.25, "unit": "cup", "name": "flour" },
+        { "quantity": 1, "unit": "tsp", "name": "baking soda" },
+        { "quantity": 1, "unit": "pinch", "name": "salt" },
+        { "quantity": 2, "unit": "cup", "name": "chocolate chips" }
+      ],
+      "steps": [
+        "Preheat oven to 375°F.",
+        "Cream butter and sugar, then beat in eggs.",
+        "Stir in flour, baking soda, and salt, then fold in chocolate chips.",
+        "Bake 10 minutes."
+      ],
+      "createdAt": "2026-11-05T12:00:00.000Z",
+      "updatedAt": "2026-11-06T10:15:00.000Z"
+    }
+  },
+
+  "GET /api/recipes/7": {
+    "recipe": {
+      "id": 7,
+      "title": "Brown Butter Cookies",
+      "description": "Nutty brown butter and a longer, lower bake.",
+      "prepMinutes": 25,
+      "cookMinutes": 12,
+      "author": { "id": 1, "username": "chef_dan" },
+      "parent": { "recipeId": 3, "version": 2, "title": "Classic Chocolate Chip Cookies" },
+      "forkCount": 1,
+      "version": 1,
+      "versions": [{ "version": 1, "createdAt": "2026-11-08T15:00:00.000Z" }],
+      "ingredients": [
+        { "quantity": 1, "unit": "cup", "name": "butter, browned" },
+        { "quantity": 0.75, "unit": "cup", "name": "brown sugar" },
+        { "quantity": 2, "unit": null, "name": "eggs" },
+        { "quantity": 2.25, "unit": "cup", "name": "flour" },
+        { "quantity": 1, "unit": "tsp", "name": "baking soda" },
+        { "quantity": 1, "unit": "pinch", "name": "salt" },
+        { "quantity": 2, "unit": "cup", "name": "chocolate chips" }
+      ],
+      "steps": [
+        "Preheat oven to 350°F.",
+        "Brown the butter in a saucepan and let it cool for 10 minutes.",
+        "Whisk browned butter and brown sugar, then beat in eggs.",
+        "Stir in flour, baking soda, and salt, then fold in chocolate chips.",
+        "Bake 12 minutes."
+      ],
+      "createdAt": "2026-11-08T15:00:00.000Z",
+      "updatedAt": "2026-11-08T15:00:00.000Z"
+    }
+  },
+
+  "GET /api/recipes/7/diff": {
+    "diff": {
+      "from": { "recipeId": 3, "version": 2, "title": "Classic Chocolate Chip Cookies" },
+      "to": { "recipeId": 7, "version": 1, "title": "Brown Butter Cookies" },
+      "fields": [
+        { "field": "prepMinutes", "from": 15, "to": 25 },
+        { "field": "cookMinutes", "from": 10, "to": 12 }
+      ],
+      "ingredients": {
+        "added": [{ "quantity": 0.75, "unit": "cup", "name": "brown sugar" }],
+        "removed": [{ "quantity": 0.75, "unit": "cup", "name": "sugar" }],
+        "changed": [
+          {
+            "from": { "quantity": 1, "unit": "cup", "name": "butter, softened" },
+            "to": { "quantity": 1, "unit": "cup", "name": "butter, browned" }
+          }
+        ]
+      },
+      "steps": {
+        "added": [{ "position": 2, "text": "Brown the butter in a saucepan and let it cool for 10 minutes." }],
+        "removed": [],
+        "changed": [
+          { "position": 1, "from": "Preheat oven to 375°F.", "to": "Preheat oven to 350°F." },
+          { "position": 3, "from": "Cream butter and sugar, then beat in eggs.", "to": "Whisk browned butter and brown sugar, then beat in eggs." },
+          { "position": 5, "from": "Bake 10 minutes.", "to": "Bake 12 minutes." }
+        ]
+      }
+    }
+  },
+
+  "GET /api/recipes/7/lineage": {
+    "lineage": {
+      "ancestors": [
+        { "id": 1, "title": "Grandma's Chocolate Chip Cookies", "author": { "id": 5, "username": "nana" }, "version": 1 },
+        { "id": 3, "title": "Classic Chocolate Chip Cookies", "author": { "id": 2, "username": "sam" }, "version": 2 }
+      ],
+      "current": { "id": 7, "title": "Brown Butter Cookies", "author": { "id": 1, "username": "chef_dan" } },
+      "forks": [
+        { "id": 9, "title": "Vegan Brown Butter Cookies", "author": { "id": 4, "username": "lee" } }
+      ]
+    }
+  },
+
+  "POST /api/recipes (400 example)": {
+    "error": {
+      "message": "Validation failed",
+      "details": [
+        { "field": "title", "message": "Too small: expected string to have >=1 characters" },
+        { "field": "ingredients.0.quantity", "message": "Too small: expected number to be >0" }
+      ]
+    }
+  }
+}
