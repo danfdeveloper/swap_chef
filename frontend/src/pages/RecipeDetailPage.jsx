@@ -1,6 +1,11 @@
 import { Link, useParams } from 'react-router-dom'
 import { getRecipeById } from '../data/mockRecipes'
 
+function formatIngredient(ingredient) {
+  const unit = ingredient.unit ? ` ${ingredient.unit}` : ''
+  return `${ingredient.quantity}${unit} ${ingredient.name}`
+}
+
 function RecipeDetailPage() {
   const { id } = useParams()
   const recipe = getRecipeById(id)
@@ -9,6 +14,9 @@ function RecipeDetailPage() {
     return (
       <section className="page">
         <h1>Recipe not found</h1>
+        <p className="page-lede">
+          Detail API wiring arrives in Milestone 3. Mock recipes still work from browse.
+        </p>
         <p>
           <Link to="/">Back to browse</Link>
         </p>
@@ -20,17 +28,17 @@ function RecipeDetailPage() {
     <section className="page">
       <header className="page-header">
         <p className="eyebrow">
-          Version {recipe.versionNumber}
+          Version {recipe.version}
           {recipe.parent
-            ? ` · forked from ${recipe.parent.title} (v${recipe.parent.versionNumber})`
+            ? ` · forked from ${recipe.parent.title} (v${recipe.parent.version})`
             : ' · original recipe'}
         </p>
         <h1>{recipe.title}</h1>
         <p className="page-lede">{recipe.description}</p>
         <p className="recipe-meta">
-          by {recipe.author.username} · prep {recipe.prepTimeMinutes} min · cook{' '}
-          {recipe.cookTimeMinutes} min · {recipe.forkCount} fork
-          {recipe.forkCount === 1 ? '' : 's'}
+          by {recipe.author.username} · prep {recipe.prepMinutes} min · cook{' '}
+          {recipe.cookMinutes} min · {recipe.forkCount}{' '}
+          {recipe.forkCount === 1 ? 'fork' : 'forks'}
         </p>
       </header>
 
@@ -52,7 +60,7 @@ function RecipeDetailPage() {
         <p className="parent-link">
           Parent:{' '}
           <Link to={`/recipes/${recipe.parent.recipeId}`}>
-            {recipe.parent.title} (version {recipe.parent.versionNumber})
+            {recipe.parent.title} (version {recipe.parent.version})
           </Link>
         </p>
       )}
@@ -63,7 +71,7 @@ function RecipeDetailPage() {
           <ul className="plain-list">
             {recipe.ingredients.map((ingredient) => (
               <li key={`${ingredient.name}-${ingredient.unit}`}>
-                {ingredient.quantity} {ingredient.unit} {ingredient.name}
+                {formatIngredient(ingredient)}
               </li>
             ))}
           </ul>
@@ -72,8 +80,8 @@ function RecipeDetailPage() {
         <section>
           <h2>Steps</h2>
           <ol className="step-list">
-            {recipe.steps.map((step) => (
-              <li key={step.order}>{step.instruction}</li>
+            {recipe.steps.map((step, index) => (
+              <li key={`${index}-${step.slice(0, 24)}`}>{step}</li>
             ))}
           </ol>
         </section>
@@ -83,9 +91,8 @@ function RecipeDetailPage() {
         <h2>Version history</h2>
         <ul className="plain-list">
           {recipe.versions.map((version) => (
-            <li key={version.versionNumber}>
-              Version {version.versionNumber} —{' '}
-              {new Date(version.savedAt).toLocaleString()}
+            <li key={version.version}>
+              Version {version.version} — {new Date(version.createdAt).toLocaleString()}
             </li>
           ))}
         </ul>
