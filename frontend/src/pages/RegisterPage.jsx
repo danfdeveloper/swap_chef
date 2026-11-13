@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import FormErrors from '../components/FormErrors'
@@ -9,6 +9,8 @@ const USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/
 function RegisterPage() {
   const { register, isAuthenticated, loading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const redirectTo = location.state?.from ?? '/'
 
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -18,7 +20,7 @@ function RegisterPage() {
   const [fieldErrors, setFieldErrors] = useState({})
 
   if (!loading && isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to={redirectTo} replace />
   }
 
   function validate() {
@@ -52,7 +54,7 @@ function RegisterPage() {
         email: email.trim(),
         password,
       })
-      navigate('/', { replace: true })
+      navigate(redirectTo, { replace: true })
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err)

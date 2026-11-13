@@ -46,7 +46,7 @@ export async function apiRequest(path, options = {}) {
     // Backend currently maps 501 through the generic >=500 error text.
     if (response.status === 501) {
       message =
-        'This API endpoint is not implemented yet (backend Milestone 2). Your form is ready once register/login/publish are wired.'
+        'This API endpoint is not implemented yet. The UI is ready once the backend route is wired.'
     }
     throw new ApiError(response.status, message, details)
   }
@@ -80,9 +80,28 @@ export function listRecipes() {
   return apiRequest('/recipes')
 }
 
+/** @param {number|string} id @param {number|string} [version] */
+export function getRecipe(id, version) {
+  const query = version != null && version !== '' ? `?version=${encodeURIComponent(version)}` : ''
+  return apiRequest(`/recipes/${id}${query}`)
+}
+
 export function publishRecipe(payload) {
   return apiRequest('/recipes', {
     method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+/** @param {number|string} id */
+export function forkRecipe(id) {
+  return apiRequest(`/recipes/${id}/forks`, { method: 'POST' })
+}
+
+/** @param {number|string} id @param {object} payload */
+export function updateRecipe(id, payload) {
+  return apiRequest(`/recipes/${id}`, {
+    method: 'PUT',
     body: JSON.stringify(payload),
   })
 }

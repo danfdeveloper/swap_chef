@@ -285,6 +285,41 @@
   color: #1f4d3f;
 }
 
+.banner--warn {
+  border-color: #d2b36a;
+  background: #fff7e5;
+  color: #6a5218;
+  margin-bottom: 1rem;
+}
+
+.banner--warn p {
+  margin: 0;
+}
+
+.version-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.version-link {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  padding: 0.15rem 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.version-link:hover {
+  text-decoration: underline;
+}
+
+.version-link--active {
+  font-weight: 600;
+  color: var(--ink);
+}
+
 .button--small {
   align-self: flex-start;
   padding: 0.35rem 0.7rem;

@@ -1,17 +1,47 @@
-import { useMemo, useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { ApiError, publishRecipe } from '../api/client'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { ApiError, getRecipe, publishRecipe, updateRecipe } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import FormErrors from '../components/FormErrors'
+import { getRecipeById } from '../data/mockRecipes'
 import { INGREDIENT_UNITS } from '../data/shapes'
 
 function emptyIngredient() {
   return { quantity: '', unit: 'tsp', name: '' }
 }
 
+function toFormIngredients(list) {
+  if (!list?.length) return [emptyIngredient()]
+  return list.map((ingredient) => ({
+    quantity: String(ingredient.quantity ?? ''),
+    unit: ingredient.unit ?? '',
+    name: ingredient.name ?? '',
+  }))
+}
+
+function toFormSteps(list) {
+  if (!list?.length) return ['']
+  return list.map((step) => step)
+}
+
+function applyRecipeToForm(recipe, setters) {
+  setters.setTitle(recipe.title ?? '')
+  setters.setDescription(recipe.description ?? '')
+  setters.setPrepMinutes(String(recipe.prepMinutes ?? 0))
+  setters.setCookMinutes(String(recipe.cookMinutes ?? 0))
+  setters.setIngredients(toFormIngredients(recipe.ingredients))
+  setters.setSteps(toFormSteps(recipe.steps))
+}
+
 function RecipeEditorPage() {
-  const { isAuthenticated, loading } = useAuth()
+  const { id } = useParams()
+  const isEditMode = Boolean(id)
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const forkDraft = location.state?.forkDraft
+  const fromFork = Boolean(location.state?.fromFork)
+  const parentTitle = location.state?.parentTitle
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -20,8 +50,11 @@ function RecipeEditorPage() {
   const [ingredients, setIngredients] = useState([emptyIngredient()])
   const [steps, setSteps] = useState([''])
   const [submitting, setSubmitting] = useState(false)
+  const [loadingRecipe, setLoadingRecipe] = useState(isEditMode)
+  const [loadError, setLoadError] = useState('')
   const [error, setError] = useState(null)
   const [fieldErrors, setFieldErrors] = useState({})
+  const [forkBanner, setForkBanner] = useState('')
 
   const unitOptions = useMemo(
     () => [
@@ -31,16 +64,110 @@ function RecipeEditorPage() {
     [],
   )
 
-  if (loading) {
+  useEffect(() => {
+    if (!forkDraft) return
+    applyRecipeToForm(forkDraft, {
+      setTitle,
+      setDescription,
+      setPrepMinutes,
+      setCookMinutes,
+      setIngredients,
+      setSteps,
+    })
+    if (forkDraft.parent) {
+      setForkBanner(
+        `Editing a fork draft of ${forkDraft.parent.title} (v${forkDraft.parent.version}). Publishing creates a new recipe once the API is ready.`,
+      )
+    }
+  }, [forkDraft])
+
+  useEffect(() => {
+    if (fromFork && parentTitle) {
+      setForkBanner(`Fork of “${parentTitle}” loaded. Save edits to create a new version when the API is ready.`)
+    }
+  }, [fromFork, parentTitle])
+
+  useEffect(() => {
+    if (!isEditMode) {
+      setLoadingRecipe(false)
+      return undefined
+    }
+
+    let cancelled = false
+
+    async function load() {
+      setLoadingRecipe(true)
+      setLoadError('')
+      try {
+        const data = await getRecipe(id)
+        if (cancelled) return
+        applyRecipeToForm(data.recipe, {
+          setTitle,
+          setDescription,
+          setPrepMinutes,
+          setCookMinutes,
+          setIngredients,
+          setSteps,
+        })
+      } catch (err) {
+        if (cancelled) return
+        const mock = getRecipeById(id)
+        if (mock) {
+          applyRecipeToForm(mock, {
+            setTitle,
+            setDescription,
+            setPrepMinutes,
+            setCookMinutes,
+            setIngredients,
+            setSteps,
+          })
+          setLoadError(
+            err instanceof ApiError && err.status === 501
+              ? 'Edit API is not implemented yet — loaded mock recipe into the editor.'
+              : 'Could not reach the API — loaded mock recipe into the editor.',
+          )
+        } else {
+          setLoadError(err instanceof ApiError ? err.message : 'Recipe not found.')
+        }
+      } finally {
+        if (!cancelled) setLoadingRecipe(false)
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [id, isEditMode])
+
+  if (authLoading || loadingRecipe) {
     return (
       <section className="page page--narrow">
-        <p className="muted">Checking login…</p>
+        <p className="muted">{authLoading ? 'Checking login…' : 'Loading recipe…'}</p>
       </section>
     )
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: '/recipes/new' }} />
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: isEditMode ? `/recipes/${id}/edit` : '/recipes/new' }}
+      />
+    )
+  }
+
+  if (isEditMode && loadError && !title) {
+    return (
+      <section className="page page--narrow">
+        <h1>Cannot edit recipe</h1>
+        <p className="page-lede">{loadError}</p>
+        <p>
+          <Link to="/">Back to browse</Link>
+        </p>
+      </section>
+    )
   }
 
   function updateIngredient(index, patch) {
@@ -109,13 +236,18 @@ function RecipeEditorPage() {
 
     setSubmitting(true)
     try {
-      const data = await publishRecipe(payload)
+      const data = isEditMode
+        ? await updateRecipe(id, payload)
+        : await publishRecipe(payload)
       navigate(`/recipes/${data.recipe.id}`)
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err)
         if (err.status === 401) {
-          navigate('/login', { replace: true, state: { from: '/recipes/new' } })
+          navigate('/login', {
+            replace: true,
+            state: { from: isEditMode ? `/recipes/${id}/edit` : '/recipes/new' },
+          })
         }
       } else {
         setError({
@@ -129,13 +261,34 @@ function RecipeEditorPage() {
     }
   }
 
+  const heading = isEditMode
+    ? fromFork
+      ? 'Edit your fork'
+      : 'Edit recipe'
+    : forkDraft
+      ? 'Publish forked recipe'
+      : 'Publish a recipe'
+
+  const lede = isEditMode
+    ? 'Title, description, and times update the recipe record. Ingredient or step changes create a new saved version.'
+    : 'Add a title, times, ingredient quantities/units, and ordered steps. The same editor is used for originals and forks.'
+
   return (
     <section className="page page--narrow page--editor">
       <header className="page-header">
-        <h1>Publish a recipe</h1>
-        <p className="page-lede">
-          Add a title, times, ingredient quantities/units, and ordered steps.
-        </p>
+        <h1>{heading}</h1>
+        <p className="page-lede">{lede}</p>
+        {user && <p className="muted">Signed in as {user.username}</p>}
+        {forkBanner && (
+          <p className="banner banner--info" role="status">
+            {forkBanner}
+          </p>
+        )}
+        {loadError && title && (
+          <p className="banner banner--info" role="status">
+            {loadError}
+          </p>
+        )}
       </header>
 
       <FormErrors error={error} fieldErrors={fieldErrors} />
@@ -311,9 +464,18 @@ function RecipeEditorPage() {
 
         <div className="action-row">
           <button type="submit" className="button" disabled={submitting}>
-            {submitting ? 'Publishing…' : 'Publish recipe'}
+            {submitting
+              ? isEditMode
+                ? 'Saving…'
+                : 'Publishing…'
+              : isEditMode
+                ? 'Save changes'
+                : 'Publish recipe'}
           </button>
-          <Link className="button button--secondary" to="/">
+          <Link
+            className="button button--secondary"
+            to={isEditMode ? `/recipes/${id}` : '/'}
+          >
             Cancel
           </Link>
         </div>
