@@ -29,9 +29,9 @@ Data shapes: `frontend/src/data/shapes.js`, `frontend/DATA_SHAPES.md` (aligned w
 | Route | Purpose |
 | --- | --- |
 | `/` | Browse recipes (newest first; title, author, fork count) |
-| `/recipes/:id` | Recipe detail (mock until M3 API wiring) |
-| `/recipes/new` | Publish recipe (auth required) |
-| `/recipes/:id/edit` | Editor shell (full edit flow in M3) |
+| `/recipes/:id` | Recipe detail (author, times, ingredients, steps, parent, versions; `?version=N`) |
+| `/recipes/new` | Publish recipe / fork draft (auth required) |
+| `/recipes/:id/edit` | Edit own recipe or fork (shared editor; auth required) |
 | `/login`, `/register` | Working auth forms |
 | `/recipes/:id/compare` | Read-only comparison (mock) |
 | `/recipes/:id/lineage` | Family-tree view (mock) |

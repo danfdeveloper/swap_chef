@@ -44,13 +44,20 @@
 
 - [ ] **Aman:** Implement exact parent-version links and version creation/retrieval.
 - [ ] **Dan:** Implement recipe-detail and fork routes.
+  - Routes stubbed (`GET /recipes/:id`, `POST /recipes/:id/forks`); still return `501`.
 - [ ] **Dan:** Implement edit/save logic that preserves previous ingredient/step versions.
-- [ ] **Emma:** Build recipe detail page with author, times, ingredients, steps, version, and parent link.
-- [ ] **Emma:** Add Fork action for logged-in users and login prompt for guests.
-- [ ] **Emma:** Reuse editor for new recipes and forked recipes.
-- [ ] **Emma + Dan:** Show version history on the recipe detail page.
+  - `PUT /recipes/:id` validates and requires auth; handler still `501`.
+- [x] **Emma:** Build recipe detail page with author, times, ingredients, steps, version, and parent link.
+  - Loads `GET /api/recipes/:id` (optional `?version=`), falls back to mock data.
+- [x] **Emma:** Add Fork action for logged-in users and login prompt for guests.
+  - Fork button + guest login/register prompt; calls `POST /api/recipes/:id/forks` (mock draft fallback when API is unavailable).
+- [x] **Emma:** Reuse editor for new recipes and forked recipes.
+  - Same `RecipeEditorPage` for `/recipes/new`, fork drafts, and `/recipes/:id/edit` (publish vs save / new version).
+- [x] **Emma + Dan:** Show version history on the recipe detail page.
+  - Emma: selectable version history UI. Dan: serve version list / `?version=` from the API when persistence is ready.
 - [ ] **Mark:** Test fork ownership, exact source-version references, repeat edits, and unchanged parent recipes.
 - [ ] **All:** Demo original recipe → fork → edit → saved new version.
+  - Blocked on Dan/Aman M3 API + persistence; Emma UI is ready.
 
 ## Milestone 4 — Diff engine and family tree
 **Goal:** Automatically display recipe differences and lineage.
