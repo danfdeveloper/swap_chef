@@ -20,16 +20,19 @@ npm run dev
 
 Then open the URL Vite prints (usually `http://localhost:5173`).
 
-The UI currently uses mock recipe data from `frontend/src/data/mockRecipes.js`. Data shapes for API agreement live in `frontend/src/data/shapes.js` and `frontend/DATA_SHAPES.md`.
+Vite proxies `/api` to `http://localhost:3000`. Browse calls the live API and falls back to mock data if the backend is down or still returning `501`. Auth + publish forms post to the API with cookies (`credentials: 'include'`).
 
-### Pages scaffolded
+Data shapes: `frontend/src/data/shapes.js`, `frontend/DATA_SHAPES.md` (aligned with `docs/API.md`).
+
+### Pages
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Browse recipes (newest first) |
-| `/recipes/:id` | Recipe detail |
-| `/recipes/new`, `/recipes/:id/edit` | Recipe editor layout |
-| `/login`, `/register` | Auth form scaffolds |
+| `/` | Browse recipes (newest first; title, author, fork count) |
+| `/recipes/:id` | Recipe detail (author, times, ingredients, steps, parent, versions; `?version=N`) |
+| `/recipes/new` | Publish recipe / fork draft (auth required) |
+| `/recipes/:id/edit` | Edit own recipe or fork (shared editor; auth required) |
+| `/login`, `/register` | Working auth forms |
 | `/recipes/:id/compare` | Read-only comparison (mock) |
 | `/recipes/:id/lineage` | Family-tree view (mock) |
 

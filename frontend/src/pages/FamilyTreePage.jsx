@@ -16,8 +16,6 @@ function FamilyTreePage() {
     )
   }
 
-  const chain = [...lineage.ancestors].reverse()
-
   return (
     <section className="page">
       <header className="page-header">
@@ -30,14 +28,14 @@ function FamilyTreePage() {
 
       <section>
         <h2>Ancestry</h2>
-        {chain.length === 0 ? (
+        {lineage.ancestors.length === 0 ? (
           <p className="muted">This is an original recipe (no parents).</p>
         ) : (
           <ol className="tree-list">
-            {chain.map((node) => (
+            {lineage.ancestors.map((node) => (
               <li key={node.id}>
                 <Link to={`/recipes/${node.id}`}>
-                  {node.title} (v{node.versionNumber}) — {node.author.username}
+                  {node.title} (v{node.version}) — {node.author.username}
                 </Link>
               </li>
             ))}
@@ -45,22 +43,20 @@ function FamilyTreePage() {
         )}
         <p className="tree-current">
           Current:{' '}
-          <Link to={`/recipes/${lineage.current.id}`}>
-            {lineage.current.title} (v{lineage.current.versionNumber})
-          </Link>
+          <Link to={`/recipes/${lineage.current.id}`}>{lineage.current.title}</Link>
         </p>
       </section>
 
       <section>
         <h2>Direct forks</h2>
-        {lineage.directForks.length === 0 ? (
+        {lineage.forks.length === 0 ? (
           <p className="muted">No direct forks yet.</p>
         ) : (
           <ul className="plain-list">
-            {lineage.directForks.map((node) => (
+            {lineage.forks.map((node) => (
               <li key={node.id}>
                 <Link to={`/recipes/${node.id}`}>
-                  {node.title} (v{node.versionNumber}) — {node.author.username}
+                  {node.title} — {node.author.username}
                 </Link>
               </li>
             ))}

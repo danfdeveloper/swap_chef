@@ -1,37 +1,35 @@
-# Frontend data shapes (Milestone 1)
+# Frontend data shapes
 
-Agreed starting contract for the React client. Confirm with Dan before backend implementation; keep `src/data/shapes.js` in sync with any changes.
+Aligned with [`docs/API.md`](../docs/API.md) (Dan's Milestone 1 contract). Source of truth in code: `src/data/shapes.js`.
 
 ## Shared records
 
 | Shape | Fields |
 | --- | --- |
 | `UserSummary` | `id`, `username` |
-| `Ingredient` | `quantity` (positive number), `unit`, `name` |
-| `Step` | `order` (1-based), `instruction` |
-| `RecipeVersionSummary` | `versionNumber`, `savedAt` (ISO 8601) |
-| `ParentReference` | `recipeId`, `versionNumber`, `title` |
+| `Ingredient` | `quantity` (> 0), `unit` (allowed unit or `null`), `name` |
+| `RecipeVersionSummary` | `version`, `createdAt` |
+| `ParentReference` | `recipeId`, `version`, `title` |
 
 ## API-facing shapes
 
 | Use | Shape |
 | --- | --- |
 | Browse list item | `id`, `title`, `author`, `forkCount`, `createdAt` |
-| Recipe detail | list fields + `description`, `prepTimeMinutes`, `cookTimeMinutes`, `versionNumber`, `versions`, `ingredients`, `steps`, `parent`, `forkCount` |
-| Publish payload | `title`, `description`, `prepTimeMinutes`, `cookTimeMinutes`, `ingredients`, `steps` |
-| Diff | `ingredientsAdded`, `ingredientsRemoved`, `ingredientsChanged`, `stepsAdded`, `stepsChanged` |
-| Lineage | `ancestors` (nearest parent first), `current`, `directForks` |
+| Recipe detail | + `description`, `prepMinutes`, `cookMinutes`, `version`, `versions`, `ingredients`, `steps` (string[]), `parent`, `updatedAt` |
+| Publish payload | `title`, `description`, `prepMinutes`, `cookMinutes`, `ingredients`, `steps` |
 
-## Response envelope (proposed)
+## Errors
 
 ```json
-{ "ok": true, "data": {} }
+{ "error": { "message": "Validation failed", "details": [{ "field": "ingredients.0.quantity", "message": "..." }] } }
 ```
 
-```json
-{ "ok": false, "error": { "code": "VALIDATION_ERROR", "message": "..." } }
-```
+## Units
 
-## Mock data
+Same list as `backend/src/schemas.js`:
+`tsp, tbsp, cup, fl oz, ml, l, oz, lb, g, kg, pinch, dash, clove, slice, can, stick, package` (+ `null` for counted items).
 
-`src/data/mockRecipes.js` includes originals, first-generation forks, a second-generation fork, and helpers for browse / detail / lineage / diff so the UI can run without the API.
+## Mock fallback
+
+`src/data/mockRecipes.js` is used when browse/detail APIs are unavailable (network error or `501`).
