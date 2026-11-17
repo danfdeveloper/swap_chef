@@ -56,3 +56,10 @@ export const recipeUpdateSchema = z
   .partial()
   .strict()
   .refine((body) => Object.keys(body).length > 0, { message: 'Provide at least one field to update' });
+
+// Fork body (POST /api/recipes/:id/forks). Optional: omit to fork the latest version.
+export const forkSchema = z
+  .object({
+    version: z.number().int().positive().optional(),
+  })
+  .strict();

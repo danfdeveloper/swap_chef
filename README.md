@@ -45,6 +45,8 @@ npm run dev            # starts on http://localhost:3000, restarts on file chang
 npm test               # runs the API and validation tests
 ```
 
+Data is kept in memory until the SQLite store is connected, so it resets when the server restarts.
+
 Check it's running: open http://localhost:3000/api/health, which should return `{"status":"ok"}`.
 
 | Variable | Default | Purpose |
@@ -52,6 +54,7 @@ Check it's running: open http://localhost:3000/api/health, which should return `
 | `PORT` | `3000` | API port |
 | `SESSION_SECRET` | dev-only value | Signs session cookies (required in production) |
 | `CORS_ORIGIN` | `http://localhost:5173` | Frontend origin allowed to call the API with cookies |
+| `BCRYPT_ROUNDS` | `10` | Password hashing cost |
 
 - **API contract:** [`docs/API.md`](docs/API.md)
 - **Mock responses for frontend work:** [`docs/mock/recipes.json`](docs/mock/recipes.json)
@@ -65,6 +68,10 @@ backend/
     app.js               builds the Express app (JSON, CORS, sessions, routes, errors)
     config.js            reads .env / environment variables
     schemas.js           validation rules (zod) and allowed units
+    views.js             builds API response shapes from stored records
+    store/
+      memoryStore.js     in-memory data store; defines the interface the SQLite store must match
+      errors.js          ConflictError, shared by store implementations
     middleware/
       errors.js          HttpError, 404 handler, JSON error handler
       requireAuth.js     blocks protected routes when not logged in
