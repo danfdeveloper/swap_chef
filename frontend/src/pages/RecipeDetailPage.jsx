@@ -178,7 +178,7 @@ function RecipeDetailPage() {
         )}
         {viewingHistorical && (
           <p className="banner banner--info" role="status">
-            Viewing a historical version. Forking will copy this version.
+            Viewing a historical version. Forking uses this version once the API supports it.
           </p>
         )}
       </header>
