@@ -1,3 +1,4 @@
+// Errors we raise on purpose. Their message and details are safe to send to the client.
 export class HttpError extends Error {
   constructor(status, message, details) {
     super(message);
@@ -16,12 +17,16 @@ export function errorHandler(err, req, res, next) {
   if (err.type === 'entity.parse.failed') {
     return res.status(400).json({ error: { message: 'Invalid JSON body' } });
   }
-  const status = err.status ?? 500;
-  if (!err.status) console.error(err); // only log unexpected errors
-  res.status(status).json({
-    error: {
-      message: status >= 500 ? 'Internal server error' : err.message,
-      ...(err.details && { details: err.details }),
-    },
-  });
+
+  // Deliberate errors (HttpError, or 4xx errors from Express/body-parser that mark themselves
+  // safe to show) keep their status and message, including 501 "Not implemented yet".
+  if (err instanceof HttpError || (err.expose && err.status < 500)) {
+    return res.status(err.status).json({
+      error: { message: err.message, ...(err.details && { details: err.details }) },
+    });
+  }
+
+  // Anything else is a bug: log it, and never leak its details to the client.
+  console.error(err);
+  res.status(500).json({ error: { message: 'Internal server error' } });
 }

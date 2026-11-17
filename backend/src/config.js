@@ -11,6 +11,7 @@ export const config = {
   env,
   port: Number(process.env.PORT ?? 3000),
   sessionSecret: process.env.SESSION_SECRET ?? 'dev-only-secret-change-me',
+  bcryptRounds: Number(process.env.BCRYPT_ROUNDS ?? 10),
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
 };
 

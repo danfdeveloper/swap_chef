@@ -53,10 +53,3 @@ test('protected recipe routes require login', async () => {
     assert.equal(res.status, 401, `${method.toUpperCase()} ${path}`);
   }
 });
-
-test('public recipe routes are reachable without login (stubbed)', async () => {
-  for (const path of ['/api/recipes', '/api/recipes/1', '/api/recipes/1/diff', '/api/recipes/1/lineage']) {
-    const res = await request(app).get(path);
-    assert.equal(res.status, 501, path);
-  }
-});

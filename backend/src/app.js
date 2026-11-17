@@ -1,11 +1,14 @@
 import express from 'express';
 import session from 'express-session';
 import { config } from './config.js';
-import { authRouter } from './routes/auth.js';
-import { recipesRouter } from './routes/recipes.js';
+import { createAuthRouter } from './routes/auth.js';
+import { createRecipesRouter } from './routes/recipes.js';
+import { createMemoryStore } from './store/memoryStore.js';
 import { notFound, errorHandler } from './middleware/errors.js';
 
-export function createApp() {
+// `store` is the data-access layer (see src/store/memoryStore.js). Tests pass a fresh one;
+// the SQLite version can be passed here once it exists.
+export function createApp({ store = createMemoryStore() } = {}) {
   const app = express();
 
   app.use(express.json({ limit: '100kb' }));
@@ -38,8 +41,8 @@ export function createApp() {
   );
 
   app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
-  app.use('/api/auth', authRouter);
-  app.use('/api/recipes', recipesRouter);
+  app.use('/api/auth', createAuthRouter(store));
+  app.use('/api/recipes', createRecipesRouter(store));
 
   app.use(notFound);
   app.use(errorHandler);
