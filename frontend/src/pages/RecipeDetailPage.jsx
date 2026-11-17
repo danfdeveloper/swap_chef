@@ -88,7 +88,8 @@ function RecipeDetailPage() {
 
     setForking(true)
     try {
-      const data = await forkRecipe(id)
+      // Fork exactly the version on screen (latest, or the one picked from history).
+      const data = await forkRecipe(id, recipe.version)
       navigate(`/recipes/${data.recipe.id}/edit`, {
         state: { fromFork: true, parentTitle: recipe.title },
       })

@@ -93,9 +93,17 @@ export function publishRecipe(payload) {
   })
 }
 
-/** @param {number|string} id */
-export function forkRecipe(id) {
-  return apiRequest(`/recipes/${id}/forks`, { method: 'POST' })
+/**
+ * Fork a recipe. Pass the version being viewed to fork that exact version;
+ * omit it to fork the latest.
+ * @param {number|string} id
+ * @param {number} [version]
+ */
+export function forkRecipe(id, version) {
+  return apiRequest(`/recipes/${id}/forks`, {
+    method: 'POST',
+    ...(version != null && { body: JSON.stringify({ version }) }),
+  })
 }
 
 /** @param {number|string} id @param {object} payload */

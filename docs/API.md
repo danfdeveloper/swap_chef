@@ -1,6 +1,6 @@
 # Swap Chef API Contract
 
-**Status:** Milestone 1 draft for team review. Owner: Dan (backend). Endpoint paths follow the
+**Status:** Milestones 2–3 implemented (auth, publish, browse, detail, fork, edit); diff and lineage come in Milestone 4. Owner: Dan (backend). Endpoint paths follow the
 suggested table in `requirements.md` §4. Anything marked *proposal* still needs sign-off.
 
 Base URL (local): `http://localhost:3000/api`
@@ -32,7 +32,7 @@ real validation rules, so the mock data stays in sync with the backend.
 | 404 | Recipe or route not found |
 | 409 | Conflict (username or email already taken) |
 | 500 | Unexpected server error (details are logged on the server, never sent) |
-| 501 | Endpoint not built yet (Milestone 1 stubs) |
+| 501 | Endpoint not built yet (diff and lineage until Milestone 4) |
 
 ## Authentication and sessions
 
@@ -108,12 +108,28 @@ Per `requirements.md`:
   (`parent.recipeId` + `parent.version`). That reference never changes, even if the parent gets newer versions later.
 - Only the recipe's author can edit it (`403` otherwise). Forking never changes the parent.
 
-What the backend needs from the database layer (Dan + Aman to finalize):
+### Data-access interface (for the SQLite layer)
 
-- Look up a recipe together with a chosen version's ingredients and steps (in order).
-- Save a new version for a recipe.
-- Create a fork row that records the parent recipe ID and the parent version.
-- Get a recipe's parent reference, and get the direct children of a recipe (for `/lineage` and `forkCount`).
+The routes only talk to the database through a "store" object. Right now it's an in-memory
+version, [`backend/src/store/memoryStore.js`](../backend/src/store/memoryStore.js), and that
+file is the full specification: arguments, return shapes, and behavior. A SQLite store with the
+same methods can be passed to `createApp({ store })` in `backend/src/server.js` without
+changing any routes. The backend tests define the expected behavior.
+
+| Method | Returns |
+| --- | --- |
+| `createUser({ username, email, passwordHash })` | User. Throws `ConflictError('username' \| 'email')` (from `store/errors.js`) if taken. Username uniqueness is case-insensitive |
+| `getUserById(id)` / `getUserByUsername(username)` | User or `null`. Username lookup is case-insensitive |
+| `createRecipe({ authorId, title, description, prepMinutes, cookMinutes, parent, ingredients, steps })` | Recipe. Also saves version 1. `parent` is `{ recipeId, version }` for a fork, otherwise `null` |
+| `getRecipe(id)` | Recipe or `null` |
+| `listRecipes()` | Recipes, newest first |
+| `updateRecipe(id, fields)` | Recipe. Updates title/description/times and `updatedAt`. Never creates a version |
+| `addVersion(recipeId, { ingredients, steps })` | The new version (`version + 1`) |
+| `getVersion(recipeId, version?)` | That version, or the latest if `version` is omitted; `null` if missing |
+| `listVersions(recipeId)` | `[{ version, createdAt }]`, oldest first |
+| `listForks(recipeId)` / `countForks(recipeId)` | Direct forks only |
+
+All methods are async. Ingredient and step order must be preserved exactly.
 
 ## Endpoints
 
@@ -121,19 +137,23 @@ What the backend needs from the database layer (Dan + Aman to finalize):
 | --- | --- | --- | --- | --- |
 | GET | `/health` | – | – | `200 { status: "ok" }` |
 | POST | `/auth/register` | – | `{ username, email, password }` | `201 { user }`, user is logged in. `409` if taken |
-| POST | `/auth/login` | – | `{ username, password }` | `200 { user }`. `401` on bad credentials |
+| POST | `/auth/login` | – | `{ username, password }` | `200 { user }`. `401` on bad credentials (same message whether the username or the password is wrong). Username is case-insensitive |
 | POST | `/auth/logout` | – | – | `204` |
 | GET | `/auth/me` | – | – | `200 { user }`, or `401` if not logged in |
 | GET | `/recipes` | – | – | `200 { recipes: [{ id, title, author, forkCount, createdAt }] }`, newest first |
-| GET | `/recipes/:id` | – | – | `200 { recipe }` at the latest version. `?version=N` returns an older version. `404` if missing |
+| GET | `/recipes/:id` | – | – | `200 { recipe }` at the latest version. `?version=N` returns an older version (`400` if not a positive whole number, `404` if that version doesn't exist). `404` if the recipe doesn't exist |
 | POST | `/recipes` | ✔ | Recipe (publish) | `201 { recipe }` at version 1 |
-| POST | `/recipes/:id/forks` | ✔ | – | `201 { recipe }`, the new fork with `parent` set. The frontend then opens it in the editor |
+| POST | `/recipes/:id/forks` | ✔ | optional `{ version }` | `201 { recipe }`, the new fork with `parent` set to the exact version copied. Without a body it copies the latest version. `400` if `version` isn't a positive whole number, `404` if that version doesn't exist. The frontend sends the version on screen, then opens the fork in the editor |
 | PUT | `/recipes/:id` | ✔ author | Recipe (edit) | `200 { recipe }`. New version only if ingredients or steps changed |
 | GET | `/recipes/:id/diff` | – | – | `200 { diff }`. `400` if the recipe is not a fork |
 | GET | `/recipes/:id/lineage` | – | – | `200 { lineage }` |
 
-Milestone 1 status: `/health`, `/auth/logout`, and `/auth/me` work. All other routes already
-check input and login, then return `501` until they're built (Milestones 2–4).
+Status: all endpoints work except `/diff` and `/lineage`, which return `501` until Milestone 4.
+Data is stored in memory until the SQLite store is connected, so it resets when the server restarts.
+
+On `PUT`, the frontend can send the whole form every time. A new version is only saved if the
+ingredients or steps actually differ from the latest version after validation (which trims text and
+lowercases units). Changing only the title, description, or times never creates a version.
 
 ### Diff
 
