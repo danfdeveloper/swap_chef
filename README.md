@@ -84,6 +84,7 @@ backend/
       recipes.js         /api/recipes/*
   test/                  node:test + supertest
 ```
+- **Database setup:** [`db/README.md`](db/README.md)
 
 ## Project docs
 

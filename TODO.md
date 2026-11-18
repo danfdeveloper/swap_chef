@@ -9,7 +9,7 @@
 - [x] **Emma:** Scaffold React + Vite frontend and basic CSS layout.
 - [x] **Dan:** Scaffold Node.js + Express server and basic API response conventions.
   - Merged via PR #1 (`backend/`, sessions, validation, route stubs).
-- [ ] **Aman:** Set up SQLite database and initial schema for users, recipes, versions, ingredients, steps, and fork relationships.
+- [x] **Aman:** Set up SQLite database and initial schema for users, recipes, versions, ingredients, steps, and fork relationships.
 - [x] **Dan + Aman:** Define API requests/responses, validation rules, and parent-version references.
   - Contract in `docs/API.md` + `docs/mock/recipes.json` (+ Zod schemas in `backend/src/schemas.js`). Aman still owns SQLite persistence.
 - [x] **Emma + Dan:** Agree on frontend data shapes and create mock recipe data.

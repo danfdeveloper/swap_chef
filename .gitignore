@@ -4,3 +4,8 @@ dist/
 *.log
 .env
 .env.*
+# SQLite database files
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
