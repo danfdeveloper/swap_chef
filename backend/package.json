@@ -11,6 +11,7 @@
   "type": "module",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "better-sqlite3": "^12.11.1",
     "express": "^5.3.0",
     "express-session": "^1.19.0",
     "zod": "^4.6.7"
@@ -21,5 +22,9 @@
   "private": true,
   "devDependencies": {
     "supertest": "^7.3.2"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.11.1": true,
+    "bcrypt@6.0.0": true
   }
 }
