@@ -10,8 +10,8 @@ const schemaPath = fileURLToPath(
     new URL('../../../db/schema.sql', import.meta.url)
 );
 
-export function initializeDatabase() {
-    const db = new Database(databasePath);
+export function initializeDatabase(path = databasePath) {
+    const db = new Database(path);
 
     db.pragma('foreign_keys = ON');
 
