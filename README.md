@@ -33,8 +33,24 @@ Data shapes: `frontend/src/data/shapes.js`, `frontend/DATA_SHAPES.md` (aligned w
 | `/recipes/new` | Publish recipe / fork draft (auth required) |
 | `/recipes/:id/edit` | Edit own recipe or fork (shared editor; auth required) |
 | `/login`, `/register` | Working auth forms |
-| `/recipes/:id/compare` | Read-only comparison (mock) |
-| `/recipes/:id/lineage` | Family-tree view (mock) |
+| `/recipes/:id/compare` | Read-only comparison vs parent (API + mock fallback) |
+| `/recipes/:id/lineage` | Family-tree / lineage with clickable nodes (API + mock fallback) |
+
+### Quick demo path (frontend)
+
+1. Start backend + frontend (see below).
+2. Browse → open a forked recipe (or publish/fork once auth works).
+3. On detail: use **Compare with parent** and **Family tree**.
+4. Guests can browse; **Fork** prompts login; logged-in users can fork/edit/publish.
+5. In the editor, **Save as draft** keeps unfinished work in the browser (local only).
+6. On recipe detail, use **Quick multiply** / servings controls to scale ingredient amounts without changing the saved recipe.
+
+### Frontend extras (local only)
+
+| Feature | Behavior |
+| --- | --- |
+| Save as draft | Stores incomplete create/edit forms in `localStorage` for the logged-in user |
+| Serving multiplier | Scales displayed ingredient quantities by desired ÷ as-written servings |
 
 ## Backend (Node.js + Express)
 

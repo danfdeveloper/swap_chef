@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ApiError, listRecipes } from '../api/client'
+import { useAuth } from '../auth/AuthContext'
+import LoadingBlock from '../components/LoadingBlock'
+import StatusBanner from '../components/StatusBanner'
 import { getBrowseRecipes } from '../data/mockRecipes'
 
 function formatDate(iso) {
@@ -12,6 +15,7 @@ function formatDate(iso) {
 }
 
 function BrowsePage() {
+  const { isAuthenticated } = useAuth()
   const [recipes, setRecipes] = useState([])
   const [source, setSource] = useState('loading')
   const [errorMessage, setErrorMessage] = useState('')
@@ -20,6 +24,7 @@ function BrowsePage() {
     let cancelled = false
 
     async function load() {
+      setSource('loading')
       try {
         const data = await listRecipes()
         if (cancelled) return
@@ -34,9 +39,7 @@ function BrowsePage() {
         setRecipes(getBrowseRecipes())
         setSource('mock')
         if (error instanceof ApiError && error.status === 501) {
-          setErrorMessage(
-            'Recipe list API is not implemented yet — showing mock data.',
-          )
+          setErrorMessage('Recipe list API is not implemented yet — showing mock data.')
         } else if (error instanceof TypeError) {
           setErrorMessage(
             'Could not reach the API — showing mock data. Start the backend on port 3000 when ready.',
@@ -57,23 +60,32 @@ function BrowsePage() {
 
   return (
     <section className="page">
-      <header className="page-header">
-        <h1>Browse recipes</h1>
-        <p className="page-lede">
-          Newest published recipes first, with title, author, and fork count.
-        </p>
-        {source === 'loading' && <p className="muted">Loading recipes…</p>}
-        {errorMessage && (
-          <p className="banner banner--info" role="status">
-            {errorMessage}
+      <header className="page-header page-header--split">
+        <div>
+          <h1>Browse recipes</h1>
+          <p className="page-lede">
+            Newest published recipes first, with title, author, and fork count. Guests can
+            browse freely.
           </p>
-        )}
-        {source === 'api' && <p className="muted">Loaded from the live API.</p>}
+        </div>
+        <Link className="button" to={isAuthenticated ? '/recipes/new' : '/login'} state={!isAuthenticated ? { from: '/recipes/new' } : undefined}>
+          {isAuthenticated ? 'Publish recipe' : 'Log in to publish'}
+        </Link>
       </header>
 
+      {source === 'loading' && <LoadingBlock label="Loading recipes…" />}
+      <StatusBanner>{errorMessage}</StatusBanner>
+      {source === 'api' && <p className="muted">Loaded from the live API.</p>}
+
       {source !== 'loading' && recipes.length === 0 ? (
-        <p className="muted">No recipes published yet.</p>
-      ) : (
+        <div className="empty-state">
+          <h2>No recipes yet</h2>
+          <p className="muted">Be the first to publish something the team can fork.</p>
+          <Link className="button" to={isAuthenticated ? '/recipes/new' : '/register'}>
+            {isAuthenticated ? 'Publish a recipe' : 'Create an account'}
+          </Link>
+        </div>
+      ) : source !== 'loading' ? (
         <ul className="recipe-list">
           {recipes.map((recipe) => (
             <li key={recipe.id} className="recipe-list__item">
@@ -88,7 +100,7 @@ function BrowsePage() {
             </li>
           ))}
         </ul>
-      )}
+      ) : null}
     </section>
   )
 }

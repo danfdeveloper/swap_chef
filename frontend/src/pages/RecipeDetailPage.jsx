@@ -1,12 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ApiError, forkRecipe, getRecipe } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import LoadingBlock from '../components/LoadingBlock'
+import ServingScaler, {
+  computeServingScale,
+  formatScaledQuantity,
+} from '../components/ServingScaler'
+import StatusBanner from '../components/StatusBanner'
 import { getRecipeById } from '../data/mockRecipes'
 
-function formatIngredient(ingredient) {
+function formatIngredient(ingredient, scale = 1) {
+  const quantity = formatScaledQuantity(ingredient.quantity, scale)
   const unit = ingredient.unit ? ` ${ingredient.unit}` : ''
-  return `${ingredient.quantity}${unit} ${ingredient.name}`
+  return `${quantity}${unit} ${ingredient.name}`
 }
 
 function RecipeDetailPage() {
@@ -22,6 +29,8 @@ function RecipeDetailPage() {
   const [forkError, setForkError] = useState('')
   const [forking, setForking] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [baseServings, setBaseServings] = useState('4')
+  const [desiredServings, setDesiredServings] = useState('4')
 
   useEffect(() => {
     let cancelled = false
@@ -76,6 +85,15 @@ function RecipeDetailPage() {
     recipe.versions?.length > 0 &&
     Number(requestedVersion) > 0 &&
     Number(requestedVersion) !== recipe.versions[recipe.versions.length - 1]?.version
+  const servingScale = useMemo(
+    () => computeServingScale(baseServings, desiredServings),
+    [baseServings, desiredServings],
+  )
+
+  useEffect(() => {
+    setBaseServings('4')
+    setDesiredServings('4')
+  }, [id, requestedVersion])
 
   async function handleFork() {
     setForkError('')
@@ -138,7 +156,7 @@ function RecipeDetailPage() {
   if (source === 'loading') {
     return (
       <section className="page">
-        <p className="muted">Loading recipe…</p>
+        <LoadingBlock label="Loading recipe…" />
       </section>
     )
   }
@@ -146,10 +164,14 @@ function RecipeDetailPage() {
   if (!recipe) {
     return (
       <section className="page">
-        <h1>Recipe not found</h1>
-        <p className="page-lede">{errorMessage || 'No recipe with that id.'}</p>
+        <header className="page-header">
+          <h1>Recipe not found</h1>
+          <p className="page-lede">{errorMessage || 'No recipe with that id.'}</p>
+        </header>
         <p>
-          <Link to="/">Back to browse</Link>
+          <Link className="button button--secondary" to="/">
+            Back to browse
+          </Link>
         </p>
       </section>
     )
@@ -171,15 +193,11 @@ function RecipeDetailPage() {
           {recipe.cookMinutes} min · {recipe.forkCount}{' '}
           {recipe.forkCount === 1 ? 'fork' : 'forks'}
         </p>
-        {errorMessage && (
-          <p className="banner banner--info" role="status">
-            {errorMessage}
-          </p>
-        )}
+        <StatusBanner>{errorMessage}</StatusBanner>
         {viewingHistorical && (
-          <p className="banner banner--info" role="status">
-            Viewing a historical version. Forking uses this version once the API supports it.
-          </p>
+          <StatusBanner>
+            Viewing a historical version. Forking copies this exact version when the API is available.
+          </StatusBanner>
         )}
       </header>
 
@@ -236,10 +254,17 @@ function RecipeDetailPage() {
       <div className="detail-grid">
         <section>
           <h2>Ingredients</h2>
+          <ServingScaler
+            baseServings={baseServings}
+            desiredServings={desiredServings}
+            onBaseChange={setBaseServings}
+            onDesiredChange={setDesiredServings}
+            scale={servingScale}
+          />
           <ul className="plain-list">
             {recipe.ingredients.map((ingredient) => (
               <li key={`${ingredient.name}-${ingredient.unit}-${ingredient.quantity}`}>
-                {formatIngredient(ingredient)}
+                {formatIngredient(ingredient, servingScale)}
               </li>
             ))}
           </ul>

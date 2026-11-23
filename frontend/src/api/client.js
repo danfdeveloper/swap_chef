@@ -113,3 +113,13 @@ export function updateRecipe(id, payload) {
     body: JSON.stringify(payload),
   })
 }
+
+/** @param {number|string} id */
+export function getRecipeDiff(id) {
+  return apiRequest(`/recipes/${id}/diff`)
+}
+
+/** @param {number|string} id */
+export function getRecipeLineage(id) {
+  return apiRequest(`/recipes/${id}/lineage`)
+}

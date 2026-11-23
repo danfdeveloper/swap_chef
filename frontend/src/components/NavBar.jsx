@@ -6,8 +6,11 @@ function NavBar() {
   const navigate = useNavigate()
 
   async function handleLogout() {
-    await logout()
-    navigate('/')
+    try {
+      await logout()
+    } finally {
+      navigate('/')
+    }
   }
 
   return (
@@ -21,7 +24,9 @@ function NavBar() {
             Browse
           </NavLink>
           <NavLink to="/recipes/new">New recipe</NavLink>
-          {loading ? null : isAuthenticated ? (
+          {loading ? (
+            <span className="nav-user muted">Checking session…</span>
+          ) : isAuthenticated ? (
             <>
               <span className="nav-user">Hi, {user.username}</span>
               <button type="button" className="nav-button" onClick={handleLogout}>
