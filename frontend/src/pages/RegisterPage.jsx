@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import FormErrors from '../components/FormErrors'
+import LoadingBlock from '../components/LoadingBlock'
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/
 
@@ -19,7 +20,15 @@ function RegisterPage() {
   const [error, setError] = useState(null)
   const [fieldErrors, setFieldErrors] = useState({})
 
-  if (!loading && isAuthenticated) {
+  if (loading) {
+    return (
+      <section className="page page--narrow">
+        <LoadingBlock label="Checking session…" />
+      </section>
+    )
+  }
+
+  if (isAuthenticated) {
     return <Navigate to={redirectTo} replace />
   }
 

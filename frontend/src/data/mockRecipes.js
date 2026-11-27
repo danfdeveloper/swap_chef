@@ -268,6 +268,20 @@ export function getRecipeDiff(id) {
     }
   }
 
+  const fields = []
+  if (parent.title !== fork.title) {
+    fields.push({ field: 'title', from: parent.title, to: fork.title })
+  }
+  if (parent.description !== fork.description) {
+    fields.push({ field: 'description', from: parent.description, to: fork.description })
+  }
+  if (parent.prepMinutes !== fork.prepMinutes) {
+    fields.push({ field: 'prepMinutes', from: parent.prepMinutes, to: fork.prepMinutes })
+  }
+  if (parent.cookMinutes !== fork.cookMinutes) {
+    fields.push({ field: 'cookMinutes', from: parent.cookMinutes, to: fork.cookMinutes })
+  }
+
   return {
     from: {
       recipeId: parent.id,
@@ -279,7 +293,7 @@ export function getRecipeDiff(id) {
       version: fork.version,
       title: fork.title,
     },
-    fields: [],
+    fields,
     ingredients: { added, removed, changed },
     steps: { added: stepsAdded, removed: stepsRemoved, changed: stepsChanged },
   }

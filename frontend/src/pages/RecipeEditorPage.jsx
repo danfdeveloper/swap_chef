@@ -3,6 +3,15 @@ import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-route
 import { ApiError, getRecipe, publishRecipe, updateRecipe } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import FormErrors from '../components/FormErrors'
+import LoadingBlock from '../components/LoadingBlock'
+import StatusBanner from '../components/StatusBanner'
+import {
+  clearDraft,
+  draftKeyForCreate,
+  draftKeyForEdit,
+  getDraft,
+  saveDraft,
+} from '../data/drafts'
 import { getRecipeById } from '../data/mockRecipes'
 import { INGREDIENT_UNITS } from '../data/shapes'
 
@@ -55,6 +64,10 @@ function RecipeEditorPage() {
   const [error, setError] = useState(null)
   const [fieldErrors, setFieldErrors] = useState({})
   const [forkBanner, setForkBanner] = useState('')
+  const [draftMessage, setDraftMessage] = useState('')
+  const [draftRestored, setDraftRestored] = useState(false)
+
+  const draftKey = isEditMode ? draftKeyForEdit(id) : draftKeyForCreate()
 
   const unitOptions = useMemo(
     () => [
@@ -140,10 +153,35 @@ function RecipeEditorPage() {
     }
   }, [id, isEditMode])
 
+  // Restore a local draft after create/edit content is ready (and after fork draft apply).
+  useEffect(() => {
+    if (authLoading || loadingRecipe || draftRestored || forkDraft) return
+    if (!user) return
+
+    const existing = getDraft(user.id, draftKey)
+    if (!existing) {
+      setDraftRestored(true)
+      return
+    }
+
+    applyRecipeToForm(existing, {
+      setTitle,
+      setDescription,
+      setPrepMinutes,
+      setCookMinutes,
+      setIngredients,
+      setSteps,
+    })
+    setDraftMessage(
+      `Restored your saved draft from ${new Date(existing.savedAt).toLocaleString()}.`,
+    )
+    setDraftRestored(true)
+  }, [authLoading, loadingRecipe, draftRestored, forkDraft, user, draftKey])
+
   if (authLoading || loadingRecipe) {
     return (
       <section className="page page--narrow">
-        <p className="muted">{authLoading ? 'Checking login…' : 'Loading recipe…'}</p>
+        <LoadingBlock label={authLoading ? 'Checking login…' : 'Loading recipe…'} />
       </section>
     )
   }
@@ -214,6 +252,30 @@ function RecipeEditorPage() {
     return { next, filledIngredients, filledSteps, prep, cook }
   }
 
+  function buildDraftPayload() {
+    return {
+      title,
+      description,
+      prepMinutes,
+      cookMinutes,
+      ingredients,
+      steps,
+    }
+  }
+
+  function handleSaveDraft() {
+    if (!user) return
+    const saved = saveDraft(user.id, draftKey, buildDraftPayload())
+    setDraftMessage(`Draft saved locally at ${new Date(saved.savedAt).toLocaleString()}.`)
+    setError(null)
+  }
+
+  function handleDiscardDraft() {
+    if (!user) return
+    clearDraft(user.id, draftKey)
+    setDraftMessage('Local draft discarded.')
+  }
+
   async function handleSubmit(event) {
     event.preventDefault()
     setError(null)
@@ -239,6 +301,7 @@ function RecipeEditorPage() {
       const data = isEditMode
         ? await updateRecipe(id, payload)
         : await publishRecipe(payload)
+      if (user) clearDraft(user.id, draftKey)
       navigate(`/recipes/${data.recipe.id}`)
     } catch (err) {
       if (err instanceof ApiError) {
@@ -279,16 +342,13 @@ function RecipeEditorPage() {
         <h1>{heading}</h1>
         <p className="page-lede">{lede}</p>
         {user && <p className="muted">Signed in as {user.username}</p>}
-        {forkBanner && (
-          <p className="banner banner--info" role="status">
-            {forkBanner}
-          </p>
-        )}
-        {loadError && title && (
-          <p className="banner banner--info" role="status">
-            {loadError}
-          </p>
-        )}
+        <StatusBanner>{forkBanner}</StatusBanner>
+        <StatusBanner>{draftMessage}</StatusBanner>
+        {loadError && title ? <StatusBanner>{loadError}</StatusBanner> : null}
+        <p className="muted">
+          Use <strong>Save as draft</strong> anytime — drafts stay in this browser until you
+          publish/save or discard them.
+        </p>
       </header>
 
       <FormErrors error={error} fieldErrors={fieldErrors} />
@@ -471,6 +531,22 @@ function RecipeEditorPage() {
               : isEditMode
                 ? 'Save changes'
                 : 'Publish recipe'}
+          </button>
+          <button
+            type="button"
+            className="button button--secondary"
+            onClick={handleSaveDraft}
+            disabled={submitting}
+          >
+            Save as draft
+          </button>
+          <button
+            type="button"
+            className="button button--secondary"
+            onClick={handleDiscardDraft}
+            disabled={submitting}
+          >
+            Discard draft
           </button>
           <Link
             className="button button--secondary"

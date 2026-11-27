@@ -9,7 +9,7 @@ function Layout() {
         <Outlet />
       </main>
       <footer className="site-footer">
-        <p>Swap Chef — publish, fork, and compare recipes.</p>
+        <p>Swap Chef — publish, fork, compare, and trace recipe lineage.</p>
       </footer>
     </div>
   )
